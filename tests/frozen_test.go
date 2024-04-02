@@ -711,7 +711,10 @@ func TestRollAppFreeze_Wasm(t *testing.T) {
 	)
 	require.NoError(t, err)
 
-	err = dymension.VoteOnProposalAllValidators(ctx, "2", cosmos.ProposalVoteYes)
+	t.Log("ProposalID ----------------------------------------------------------------:", propTx.ProposalID)
+	t.Log("TxHash ----------------------------------------------------------------:", propTx.TxHash)
+
+	err = dymension.VoteOnProposalAllValidators(ctx, propTx.ProposalID, cosmos.ProposalVoteYes)
 	require.NoError(t, err, "failed to submit votes")
 
 	height, err = dymension.Height(ctx)
@@ -1104,7 +1107,7 @@ func TestOtherRollappNotAffected_EVM(t *testing.T) {
 	propTx, err = dymension.SubmitFraudProposal(ctx, dymensionUser.KeyName(), rollapp1.Config().ChainID, fraudHeight, sequencerAddr, rollapp1ClientOnDym, submitFraudStr, submitFraudStr, deposit)
 	require.NoError(t, err)
 
-	err = dymension.VoteOnProposalAllValidators(ctx, "2", cosmos.ProposalVoteYes)
+	err = dymension.VoteOnProposalAllValidators(ctx, propTx.ProposalID, cosmos.ProposalVoteYes)
 	require.NoError(t, err, "failed to submit votes")
 
 	// Wait a few blocks for the gov to pass and to verify if the state index increment
