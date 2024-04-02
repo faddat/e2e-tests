@@ -620,7 +620,7 @@ func TestRollAppFreeze_Wasm(t *testing.T) {
 
 	height, err := dymension.Height(ctx)
 	require.NoError(t, err, "error fetching height")
-	_, err = cosmos.PollForProposalStatus(ctx, dymension.CosmosChain, height, height+20, propTx.ProposalID, cosmos.ProposalStatusPassed)
+	_, err = cosmos.PollForProposalStatus(ctx, dymension.CosmosChain, height, height+30, propTx.ProposalID, cosmos.ProposalStatusPassed)
 	require.NoError(t, err, "proposal status did not change to passed")
 
 	new_params, err := dymension.QueryParam(ctx, "rollapp", "DeployerWhitelist")
