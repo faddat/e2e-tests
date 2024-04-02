@@ -322,7 +322,7 @@ func TestRollAppFreeze_EVM(t *testing.T) {
 		}
 	}
 
-	err = dymension.SubmitFraudProposal(
+	propTx, err = dymension.SubmitFraudProposal(
 		ctx, dymensionUser.KeyName(),
 		rollapp1.Config().ChainID,
 		targetHeight,
@@ -336,6 +336,11 @@ func TestRollAppFreeze_EVM(t *testing.T) {
 
 	err = dymension.VoteOnProposalAllValidators(ctx, "2", cosmos.ProposalVoteYes)
 	require.NoError(t, err, "failed to submit votes")
+
+	height, err = dymension.Height(ctx)
+	require.NoError(t, err, "error fetching height")
+	_, err = cosmos.PollForProposalStatus(ctx, dymension.CosmosChain, height, height+20, propTx.ProposalID, cosmos.ProposalStatusPassed)
+	require.NoError(t, err, "proposal status did not change to passed")
 
 	// Wait a few blocks for the gov to pass and to verify if the state index increment
 	err = testutil.WaitForBlocks(ctx, 20, dymension, rollapp1)
@@ -694,7 +699,7 @@ func TestRollAppFreeze_Wasm(t *testing.T) {
 		}
 	}
 
-	err = dymension.SubmitFraudProposal(
+	propTx, err = dymension.SubmitFraudProposal(
 		ctx, dymensionUser.KeyName(),
 		rollapp1.Config().ChainID,
 		targetHeight,
@@ -708,6 +713,14 @@ func TestRollAppFreeze_Wasm(t *testing.T) {
 
 	err = dymension.VoteOnProposalAllValidators(ctx, "2", cosmos.ProposalVoteYes)
 	require.NoError(t, err, "failed to submit votes")
+
+	height, err = dymension.Height(ctx)
+	require.NoError(t, err, "error fetching height")
+
+	propRes, err := cosmos.PollForProposalStatus(ctx, dymension.CosmosChain, height, height+20, propTx.ProposalID, cosmos.ProposalStatusPassed)
+	require.NoError(t, err, "proposal status did not change to passed")
+
+	t.Log("Prop Status ----------------------------------------------------------------:", propRes.Status)
 
 	// Wait a few blocks for the gov to pass and to verify if the state index increment
 	err = testutil.WaitForBlocks(ctx, 40, dymension, rollapp1)
@@ -1088,7 +1101,7 @@ func TestOtherRollappNotAffected_EVM(t *testing.T) {
 	}
 
 	// Submit fraud proposal and all votes yes so the gov will pass and got executed.
-	err = dymension.SubmitFraudProposal(ctx, dymensionUser.KeyName(), rollapp1.Config().ChainID, fraudHeight, sequencerAddr, rollapp1ClientOnDym, submitFraudStr, submitFraudStr, deposit)
+	propTx, err = dymension.SubmitFraudProposal(ctx, dymensionUser.KeyName(), rollapp1.Config().ChainID, fraudHeight, sequencerAddr, rollapp1ClientOnDym, submitFraudStr, submitFraudStr, deposit)
 	require.NoError(t, err)
 
 	err = dymension.VoteOnProposalAllValidators(ctx, "2", cosmos.ProposalVoteYes)
@@ -1523,7 +1536,7 @@ func TestOtherRollappNotAffected_Wasm(t *testing.T) {
 		}
 	}
 	// Submit fraud proposal and all votes yes so the gov will pass and got executed.
-	err = dymension.SubmitFraudProposal(ctx, dymensionUser.KeyName(), rollapp1.Config().ChainID, fraudHeight, sequencerAddr, rollapp1ClientOnDym, submitFraudStr, submitFraudStr, deposit)
+	propTx, err = dymension.SubmitFraudProposal(ctx, dymensionUser.KeyName(), rollapp1.Config().ChainID, fraudHeight, sequencerAddr, rollapp1ClientOnDym, submitFraudStr, submitFraudStr, deposit)
 	require.NoError(t, err)
 
 	err = dymension.VoteOnProposalAllValidators(ctx, "2", cosmos.ProposalVoteYes)
